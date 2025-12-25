@@ -1,59 +1,21 @@
-  "name": "rx-model-backend",
-  "version": "1.0.0",
-  "description": "Sports Odds Backend",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "node-fetch": "^3.3.2"
-  }
-}
+# RX Model Backend
 
-========================
-FILE: index.js
-========================
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
-import dotenv from "dotenv";
+Node.js backend that securely fetches live sportsbook odds.
 
-dotenv.config();
+## Endpoints
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+GET /  
+Health check
 
-const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.ODDS_API_KEY;
+GET /odds  
+Live odds  
+Query params:
+- sport (example: basketball_nba, soccer_epl, americanfootball_nfl)
 
-/* Health Check */
-app.get("/", (req, res) => {
-  res.json({ status: "RX Model backend running" });
-});
+## Environment Variables
 
-/* Live Odds */
-app.get("/odds", async (req, res) => {
-  try {
-    const response = await fetch(
-      `https://api.the-odds-api.com/v4/sports/upcoming/odds/?regions=us&markets=h2h,spreads,totals&apiKey=${API_KEY}`
-    );
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch odds" });
-  }
-});
+ODDS_API_KEY = your odds API key
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+## Deployment
 
-========================
-FILE: .env
-========================
-ODDS_API_KEY="PUT_YOUR_API_KEY_HERE"
+Designed for Railway / Node.js hosting.
