@@ -5,7 +5,7 @@ const PORT = process.env.PORT || 10000;
 app.use(express.json());
 
 // ==========================================
-// 🧠 TEXT PARSING UTILITY (REPLACES THE BLIND SPOT)
+// 🧠 TEXT PROCESSING & TRUTH CONTROL
 // ==========================================
 const parseTextContext = (text) => {
     if (!text) return {};
@@ -19,42 +19,37 @@ const parseTextContext = (text) => {
 };
 
 // ==========================================
-// 📊 SPORTS PROJECTION ENGINE FORMULAS (OVERS BIAS)
+// 📊 TRUTH-LOCKED PROJECTION MATH MODELS
 // ==========================================
 const ModelEngine = {
     /**
-     * Soccer Projections Formula
+     * Soccer Projections Formula (Strict Overs Focus)
      */
     runSoccerProjection: (teamData, playerData, rawNotes) => {
         const { expectedPossession, matchCorrelation, currentMinute, scoreLine } = teamData || {};
         const { tacticalRole, historicalBaseline } = playerData || {};
         
-        // Strict Filter: Strict Overs focus. Never handle GK or Attackers/Strikers.
+        // Strict Overs Filter: GKs, Strikers, and Attackers are strictly banned from processing
         const role = (tacticalRole || '').toUpperCase();
         if (role === 'GK' || role === 'STRIKER' || role === 'ATTACKER' || role === 'ST') {
             return "FILTERED_POSITION_OVERS_ONLY";
         }
         
-        // Parse the text notes box
         const textContext = parseTextContext(rawNotes);
         let possessionValue = expectedPossession || 50;
-        
-        // If notes say the team is dominant or high possession, force a high value
         if (textContext.isHighPossession) possessionValue = 60;
 
         let projectionModifier = 1.0;
         
-        // 1. The Possession Pivot (Favors Midfielders & Center Backs)
+        // The Possession Pivot for Midfielders and Center Backs
         if (possessionValue > 55 && (role === 'CB' || role === 'MID' || role === 'DEFENDER')) {
             projectionModifier += 0.15; 
         }
         
-        // Adjust baseline if player is playing away from home based on text input
         if (textContext.isAway) {
-            projectionModifier += 0.05; // Adjusting for volumetric defensive/midfield output away
+            projectionModifier += 0.05; 
         }
         
-        // 2. Game Scripting: The 70th Minute Rule
         if (currentMinute >= 70 && scoreLine === 'draw') {
             projectionModifier -= 0.10; 
         }
@@ -66,41 +61,63 @@ const ModelEngine = {
     },
 
     /**
-     * Tennis Projections Formula
+     * Tennis Projections Formula (PrizePicks Fantasy Score Mode)
      */
     runTennisProjection: (playerA, playerB, rawNotes) => {
         const textContext = parseTextContext(rawNotes);
+        const surfaceFactor = textContext.isClay ? 1.15 : 1.0;
         
-        // Force clay court scaling if explicitly stated in text details
-        let surfaceFactor = textContext.isClay ? 1.2 : 1.0;
+        const utrA = parseFloat(playerA?.utr) || 8.0;
+        const utrB = parseFloat(playerB?.utr) || 8.0;
+        const utrDelta = utrA - utrB;
         
-        const utrDelta = (playerA?.utr || 0) - (playerB?.utr || 0);
-        const rankDelta = (playerB?.rank || 100) - (playerA?.rank || 100); 
-        
-        // Strictly optimized to favor high-probability over performance tracks
-        const winProbability = (0.5 + (utrDelta * 0.05) + (rankDelta * 0.002)) * surfaceFactor;
-        return Math.min(Math.max(winProbability, 0.05), 0.95).toFixed(2);
+        // Establish an objective, unbiased win probability regardless of notes phrasing
+        const baseWinProb = 0.5 + (utrDelta * 0.08);
+        const winProbability = Math.min(Math.max(baseWinProb, 0.10), 0.90);
+
+        let projectedFantasyScore = 0;
+
+        if (winProbability >= 0.65) {
+            // Projected dominant 2-0 match script (e.g., 12 games won, 5 games lost)
+            const gamesWon = 12;
+            const gamesLost = textContext.isClay ? 6 : 5; // Clay court matches drag slightly longer
+            
+            projectedFantasyScore = 3 + (2 * 3) + gamesWon - gamesLost + 5; // Includes +5 Clean Sweep Bonus
+        } else {
+            // Projected close 3-set script or gritty 2-1 matchup script
+            const gamesWon = 16;
+            const gamesLost = 14;
+            
+            projectedFantasyScore = 3 + (2 * 3) + gamesWon - gamesLost; // No sweep bonus
+        }
+
+        // Apply surface pacing modifier directly to the ultimate prize picks output
+        return (projectedFantasyScore * surfaceFactor).toFixed(1);
     },
 
     /**
-     * CS2 Performance Formula
+     * CS2 Performance Formula (Anti-Bias & Player/Team Disconnect Fix)
      */
     runCS2Projection: (playerStats, mapData, rawNotes) => {
         const textContext = parseTextContext(rawNotes);
-        const { avgRating, entryKillRatio } = playerStats || {};
-        const { mapWinRate } = mapData || {};
+        
+        // Detect and intercept if the payload accidentally passed a team asset instead of a player profile
+        if (!playerStats || playerStats.isTeamAsset || typeof playerStats.avgRating === 'undefined') {
+            return "ERROR_EXPECTED_PLAYER_DATA_NOT_TEAM";
+        }
+
+        const rating = parseFloat(playerStats.avgRating) || 1.05;
+        const entryRatio = parseFloat(playerStats.entryKillRatio) || 1.0;
+        const mapWinRate = parseFloat(mapData?.mapWinRate) || 0.50;
         
         let pacingModifier = 1.0;
-        if (textContext.isAggressive) {
-            pacingModifier += 0.12; // Boost baseline volume expectations based on notes
-        }
+        if (textContext.isAggressive) pacingModifier += 0.08;
+
+        // Strict baseline volume projection that ignores name-flipping manipulation
+        const calculatedKills = (rating * 18.2) * (1 + (entryRatio * 0.08)) * (0.7 + (mapWinRate * 0.6)) * pacingModifier;
         
-        const rating = avgRating || 1.05;
-        const entryRatio = entryKillRatio || 1.0;
-        const winRate = mapWinRate || 0.50;
-        
-        const expectedKillVolume = (rating * 18.5) * (1 + (entryRatio * 0.1)) * winRate * pacingModifier;
-        return expectedKillVolume.toFixed(1);
+        // PrizePicks Scoring Calibration for CS2 Maps 1-2 (Kills Volume tracking)
+        return calculatedKills.toFixed(1);
     }
 };
 
@@ -112,7 +129,6 @@ app.get('/', (req, res) => {
 });
 
 app.post('/api/project', (req, res) => {
-    // Accepting 'notes' directly from the text/details box on your front-end
     const { sport, teamData, playerData, notes, playerA, playerB, playerStats, mapData } = req.body;
     
     try {
