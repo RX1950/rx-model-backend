@@ -1,4 +1,3 @@
-```javascript
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -12,36 +11,30 @@ app.use(express.json());
 const ModelEngine = {
     /**
      * Soccer Projections Formula
-     * Custom 4-part framework integrating possession, correlation, scripting, and roles.
      */
     runSoccerProjection: (teamData, playerData) => {
         const { expectedPossession, matchCorrelation, currentMinute, scoreLine } = teamData;
         const { tacticalRole, historicalBaseline } = playerData;
         
-        // Strict Filter: Focuses strictly on MIDS/DEFENDERS (CB). Never processes GK or strikers.
         if (tacticalRole === 'GK' || tacticalRole === 'STRIKER') {
             return "FILTERED_POSITION";
         }
         
         let projectionModifier = 1.0;
         
-        // 1. The Possession Pivot
         if (expectedPossession > 55 && (tacticalRole === 'CB' || tacticalRole === 'MID')) {
             projectionModifier += 0.15; 
         }
         
-        // 2. Game Scripting: The 70th Minute Rule
         if (currentMinute >= 70 && scoreLine === 'draw') {
             projectionModifier -= 0.10; 
         }
         
-        // 3. Match-Specific Correlation & Volumetric output
         return (historicalBaseline * projectionModifier * matchCorrelation).toFixed(2);
     },
 
     /**
      * Tennis Projections Formula
-     * Evaluates clay court matchups using WTA and UTR rank gaps to catch line bugs.
      */
     runTennisProjection: (playerA, playerB, courtSurface) => {
         let surfaceFactor = courtSurface === 'clay' ? 1.2 : 1.0;
@@ -54,7 +47,6 @@ const ModelEngine = {
 
     /**
      * CS2 Performance Formula
-     * Extracts entry volume pacing and map-specific efficiency metrics.
      */
     runCS2Projection: (playerStats, mapData) => {
         const { avgRating, entryKillRatio } = playerStats;
@@ -69,12 +61,10 @@ const ModelEngine = {
 // 📡 RENDER API ENDPOINTS
 // ==========================================
 
-// Main web route so Render knows our container is alive and listening
 app.get('/', (req, res) => {
     res.send('Sports Projection Backend Engine is Live and Running.');
 });
 
-// Primary route to feed live matchup calculations
 app.post('/api/project', (req, res) => {
     const { sport, teamData, playerData } = req.body;
     
