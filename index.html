@@ -1,75 +1,209 @@
-async function processImageAnalysis() {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASH FLOW ANALYTICS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #060913;
+            color: #94a3b8;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        /* Blueprint grid background matching original UI */
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(16, 24, 48, 0.5) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(16, 24, 48, 0.5) 1px, transparent 1px);
+        }
+        .text-neon-green { color: #10b981; }
+        .border-neon-green { border-color: #047857; }
+        .bg-neon-green { background-color: #10b981; }
+        .tab-active {
+            border: 1px solid #047857;
+            background-color: rgba(6, 78, 59, 0.3);
+            color: #10b981;
+        }
+    </style>
+</head>
+<body class="grid-bg min-h-screen p-4 flex flex-col items-center">
+
+    <div class="w-full max-w-md flex flex-col min-h-screen">
+        
+        <header class="flex justify-between items-center pt-4 pb-6">
+            <div class="flex items-center space-x-3">
+                <div class="border border-emerald-500 rounded p-1.5 bg-slate-900/80">
+                    <svg class="w-5 h-5 text-neon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-wider text-white flex items-center">CASH<span class="ml-2 text-white/40">FLOW</span></h1>
+                    <p class="text-[10px] text-neon-green font-bold tracking-widest uppercase">ANALYTICS</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 text-[10px] font-bold tracking-wider">
+                <span id="status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="status-text" class="text-neon-green">SYS.ONLINE</span>
+            </div>
+        </header>
+
+        <nav class="grid grid-cols-5 gap-1 bg-slate-950/60 p-1 border border-slate-900 rounded mb-6 text-center text-xs font-bold text-slate-400">
+            <div onclick="setSport('soccer')" id="tab-soccer" class="py-2 rounded cursor-pointer tab-active">SOCCER</div>
+            <div onclick="setSport('mlb')" id="tab-mlb" class="py-2 rounded cursor-pointer hover:text-white">MLB</div>
+            <div onclick="setSport('cs2')" id="tab-cs2" class="py-2 rounded cursor-pointer hover:text-white">CS2</div>
+            <div onclick="setSport('tennis')" id="tab-tennis" class="py-2 rounded cursor-pointer hover:text-white">TENNIS</div>
+            <div onclick="setSport('repos')" id="tab-repos" class="py-2 rounded cursor-pointer hover:text-white">REPOS</div>
+        </nav>
+
+        <main class="space-y-6 flex-1">
+            
+            <div id="drop-zone" class="border-2 border-dashed border-emerald-900/60 bg-slate-950/40 rounded-xl p-8 flex flex-col items-center justify-center min-h-[260px] text-center cursor-pointer transition relative hover:border-emerald-700/60">
+                <input type="file" id="file-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleFileSelect(event)">
+                
+                <div id="drop-zone-content" class="flex flex-col items-center space-y-4">
+                    <svg class="w-12 h-12 text-emerald-600/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                    <p class="text-sm font-bold tracking-wide text-slate-400 uppercase">
+                        DRAG & DROP TICKET IMAGE<br>
+                        <span class="text-neon-green text-xs normal-case font-medium">OR</span> <span class="text-neon-green underline">CLICK TO BROWSE</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-[10px] font-bold text-neon-green tracking-wider uppercase flex items-center space-x-1">
+                    <span>📋</span> <span>MANUAL MATCHUP CONTEXT (OPTIONAL)</span>
+                </label>
+                <textarea id="manual-context" rows="3" class="w-full bg-slate-950/80 border border-slate-900 rounded p-3 text-xs text-slate-300 placeholder-slate-700 focus:outline-none focus:border-emerald-800" placeholder="Enter matchup details or player names here..."></textarea>
+            </div>
+
+            <button onclick="processImageAnalysis()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black tracking-widest text-xs py-3.5 rounded transition uppercase flex items-center justify-center space-x-2">
+                <span>🗄️</span> <span>PROCESS ANALYSIS</span>
+            </button>
+
+            <div id="history-header" class="pt-4 border-t border-slate-900 hidden">
+                <h3 class="text-xs font-bold text-neon-green tracking-wider uppercase mb-4">Matrix Log Feed</h3>
+            </div>
+            <div id="results-feed" class="space-y-4 pb-12"></div>
+        </main>
+    </div>
+
+    <script>
+        let selectedSport = 'soccer';
+        let base64String = '';
+        let fileMimeType = '';
+        const BACKEND = 'https://rx-model-backend.onrender.com';
+
+        function setSport(sport) {
+            selectedSport = sport.toLowerCase();
+            document.querySelectorAll('nav div').forEach(el => el.className = 'py-2 rounded cursor-pointer hover:text-white');
+            document.getElementById(`tab-${sport.toLowerCase()}`).className = 'py-2 rounded cursor-pointer tab-active';
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            fileMimeType = file.type;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                // Displaying immediate user preview
+                document.getElementById('drop-zone-content').innerHTML = `
+                    <img src="${event.target.result}" class="max-h-44 rounded border border-emerald-500/30 object-contain shadow-lg shadow-emerald-950/20">
+                `;
+                // Stripping header tags out of the raw base64 string to satisfy backend validation rules
+                base64String = event.target.result.split(',')[1];
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function processImageAnalysis() {
             const contextText = document.getElementById('manual-context').value;
             const feed = document.getElementById('results-feed');
             const historyHeader = document.getElementById('history-header');
             
-            if (!targetFile) {
-                alert("Please drag & drop or select a ticket image first.");
+            if (!base64String) {
+                alert("Please drop or upload a ticket image card first.");
                 return;
             }
 
-            // Unhide history panel and create a live loading block
             historyHeader.classList.remove('hidden');
             const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            const cardId = `log-${Date.now()}`;
             
             const loaderCard = document.createElement('div');
-            loaderCard.className = "bg-slate-950/90 border border-slate-900 rounded-lg p-6 font-mono text-xs space-y-3";
-            loaderCard.id = `loading-${Date.now()}`;
+            loaderCard.className = "bg-slate-950/90 border border-slate-900 rounded-lg p-5 font-mono text-xs space-y-3";
+            loaderCard.id = cardId;
             loaderCard.innerHTML = `
                 <div class="flex justify-between items-center text-[10px] text-slate-500 font-bold">
-                    <span class="bg-emerald-950 text-neon-green px-1.5 py-0.5 rounded">${selectedSport}</span>
+                    <span class="bg-emerald-950 text-neon-green px-1.5 py-0.5 rounded uppercase">${selectedSport}</span>
                     <span>${timestamp}</span>
                 </div>
                 <div class="flex items-center space-x-2">
                     <div class="w-3 h-3 border-2 border-t-transparent border-neon-green rounded-full animate-spin"></div>
-                    <p class="text-neon-green font-bold tracking-wide">UPLOADING ASSETS TO QUANT PIPELINE... RETRIEVING ANALYSIS...</p>
+                    <p class="text-neon-green font-bold">PARSING IMAGE SLIP... EXECUTING DATA PROJECTIONS...</p>
                 </div>
             `;
             feed.prepend(loaderCard);
 
-            // Prepare the real payload for your Go model / backend
-            const formData = new FormData();
-            formData.append('image', targetFile);
-            formData.append('sport', selectedSport);
-            formData.append('context', contextText);
-
             try {
-                // Pointing to your active analytical processing endpoint
-                const response = await fetch(`${BACKEND}/api/analyze`, {
+                // Strictly complying with your Zod configuration rules (AnalyzeImageBody)
+                const response = await fetch(`${BACKEND}/analyze`, {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        imageBase64: base64String,
+                        mimeType: fileMimeType,
+                        sport: selectedSport,
+                        manualContext: contextText // satisfy router fallback checks
+                    })
                 });
 
-                if (!response.ok) throw new Error(`Server returned status: ${response.status}`);
-                
+                if (!response.ok) throw new Error(`Server execution status error: ${response.status}`);
                 const data = await response.json();
-                
-                // Extract your structural model writeup or fallback text if unavailable
-                const modelWriteup = data.analysis || data.projection || JSON.stringify(data, null, 2);
 
-                // Update the loader card directly with your actual real-time engine data
+                // Format your dynamic Go model responses from Express cleanly
                 loaderCard.innerHTML = `
-                    <div class="flex justify-between items-center text-[10px] text-slate-500 font-bold mb-2">
-                        <span class="bg-emerald-950 text-neon-green px-1.5 py-0.5 rounded">${selectedSport}</span>
+                    <div class="flex justify-between items-center text-[10px] text-slate-500 font-bold mb-3">
+                        <span class="bg-emerald-950 text-neon-green px-1.5 py-0.5 rounded uppercase">${selectedSport}</span>
                         <div class="flex items-center space-x-2">
                             <span>${timestamp}</span>
-                            <span class="text-slate-600 hover:text-red-400 cursor-pointer" onclick="this.closest('.bg-slate-950').remove()">🗑️</span>
+                            <span class="text-slate-700 hover:text-red-400 cursor-pointer" onclick="this.closest('.bg-slate-950').remove()">🗑️</span>
                         </div>
                     </div>
-                    <div class="text-slate-200 uppercase leading-relaxed text-[11px] tracking-wide whitespace-pre-wrap font-mono">
-                        ${modelWriteup}
+                    <div class="space-y-4">
+                        <div class="text-slate-300 leading-relaxed text-[11px] whitespace-pre-wrap border-b border-slate-900 pb-3 font-sans">
+                            ${data.writeup || 'No writeup compiled.'}
+                        </div>
+                        <div class="text-neon-green font-bold text-[11px] leading-relaxed whitespace-pre-wrap bg-emerald-950/20 p-2.5 rounded border border-emerald-900/40">
+                            ${data.projection || 'No data matrix blocks generated.'}
+                        </div>
                     </div>
                 `;
 
             } catch (error) {
-                console.error("Pipeline Error:", error);
                 loaderCard.innerHTML = `
                     <div class="flex justify-between items-center text-[10px] text-red-500 font-bold mb-1">
-                        <span class="bg-red-950 text-red-400 px-1.5 py-0.5 rounded">ERROR</span>
+                        <span class="bg-red-950 text-red-400 px-1.5 py-0.5 rounded">EXECUTION REJECTED</span>
                         <span>${timestamp}</span>
                     </div>
-                    <p class="text-red-400 font-bold">PIPELINE EXECUTION FAILED.</p>
-                    <p class="text-slate-500 text-[10px] leading-normal">${error.message}</p>
+                    <p class="text-red-400 font-bold">PIPELINE SYNCHRONIZATION FAILED.</p>
+                    <p class="text-slate-600 text-[10px]">${error.message}</p>
                 `;
             }
         }
+
+        async function runHealthCheck() {
+            try {
+                const res = await fetch(`${BACKEND}/health`).catch(() => null);
+                if (!res || !res.ok) {
+                    document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-red-500";
+                    document.getElementById('status-text').className = "text-red-500 font-bold";
+                    document.getElementById('status-text').textContent = "SYS.OFFLINE";
+                }
+            } catch(e) {}
+        }
+        runHealthCheck();
+    </script>
+</body>
+</html>
