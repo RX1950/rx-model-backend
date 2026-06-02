@@ -30,7 +30,6 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Points directly to the root folder where index.html lives
           path: '.'
 
       - name: Deploy to GitHub Pages
