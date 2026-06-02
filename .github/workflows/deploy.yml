@@ -24,30 +24,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
-
-      - name: Install Dependencies
-        run: pnpm install
-
-      - name: Build Dashboard
-        run: pnpm run build --prefix artifacts/mockup-sandbox || pnpm run build
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Points directly to your compiled build output directory (usually 'dist' or 'build')
-          path: './artifacts/mockup-sandbox/dist'
+          # Points directly to the root folder where index.html lives
+          path: '.'
 
       - name: Deploy to GitHub Pages
         id: deployment
