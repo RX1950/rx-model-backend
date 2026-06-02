@@ -42,8 +42,8 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2 text-[10px] font-bold tracking-wider">
-                <span id="status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span id="status-text" class="text-neon-green">SYS.ONLINE</span>
+                <span id="status-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span id="status-text" class="text-slate-500">SYS.CHECKING</span>
             </div>
         </header>
 
@@ -101,7 +101,6 @@
         function handleFileSelect(e) {
             const file = e.target.files[0];
             if (!file) return;
-            fileMimeType = file.type;
             
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -137,10 +136,10 @@
             `;
             feed.prepend(loaderCard);
 
-            // Dynamically structural alignment to feed your backend model requirements
             let payload = {
                 sport: selectedSport,
-                notes: contextText
+                notes: contextText,
+                image: base64String
             };
 
             if (selectedSport === 'soccer') {
@@ -161,7 +160,7 @@
                     body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) throw new Error(`Server returned status status: ${response.status}`);
+                if (!response.ok) throw new Error(`Server returned status: ${response.status}`);
                 const data = await response.json();
 
                 loaderCard.innerHTML = `
@@ -197,7 +196,6 @@
 
         async function runHealthCheck() {
             try {
-                // Ping the true root URL '/' of your backend
                 const res = await fetch(`${BACKEND}/`).catch(() => null);
                 if (!res || !res.ok) throw new Error();
                 
@@ -211,7 +209,7 @@
             }
         }
         runHealthCheck();
-        setInterval(runHealthCheck, 30000);
+        setInterval(runHealthCheck, 15000);
     </script>
 </body>
 </html>
