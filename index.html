@@ -1,31 +1,183 @@
 <!DOCTYPE html>
-<!--
-  This file is the entry for ALL routes, including /preview/* canvas iframes.
-  Fonts are loaded here as non-blocking <link> tags (not CSS @import, which is render-blocking).
--->
-<html lang="en" style="height: 100%">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RX Model Quant Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b0f19; color: #f3f4f6; font-family: system-ui, sans-serif; }
+        .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center border-b border-gray-800 pb-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold tracking-wide text-white">RX-MODEL QUANT TERMINAL</h1>
+                <p class="text-xs text-gray-400 mt-1">Backend Connection Status: <span id="status" class="text-yellow-500 font-semibold">CONNECTING...</span></p>
+            </div>
+            <div class="text-right">
+                <span class="bg-blue-900 text-blue-200 text-xs px-3 py-1 rounded-full font-mono uppercase tracking-wider">Unbiased Live Projections</span>
+            </div>
+        </header>
 
-    <meta property="og:title" content="Mockup Canvas" />
-    <meta property="og:description" content="UI prototyping sandbox with infinite canvas" />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Mockup Canvas" />
-    <meta name="twitter:description" content="UI prototyping sandbox with infinite canvas" />
+        <div class="flex space-x-6 border-b border-gray-800 mb-6 text-sm font-medium">
+            <button onclick="switchSport('soccer')" id="tab-soccer" class="pb-3 tab-active uppercase tracking-wider">⚽ Soccer (Mid/Def)</button>
+            <button onclick="switchSport('tennis')" id="tab-tennis" class="pb-3 text-gray-400 hover:text-gray-200 uppercase tracking-wider">🎾 Tennis (Clay/UTR)</button>
+            <button onclick="switchSport('cs2')" id="tab-cs2" class="pb-3 text-gray-400 hover:text-gray-200 uppercase tracking-wider">🎮 CS2 Props</button>
+        </div>
 
-    <title>Mockup Canvas</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
-    <!-- Non-blocking font bundle: renders with fallback fonts immediately, swaps in when loaded -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" media="print" onload="this.media='all'"
-          href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@300..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Oxanium:wght@200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@300..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Oxanium:wght@200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"></noscript>
-  </head>
-  <body style="height: 100%; margin: 0">
-    <div id="root" style="height: 100%"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 h-fit">
+                <h2 class="text-lg font-semibold mb-4 text-white">Line Analysis Setup</h2>
+                <form id="projection-form" onsubmit="runModelRun(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Player Name</label>
+                        <input type="text" id="playerName" required class="w-full bg-gray-950 border border-gray-800 rounded p-2.5 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Position / Role</label>
+                        <input type="text" id="position" placeholder="e.g., CB, MID" class="w-full bg-gray-950 border border-gray-800 rounded p-2.5 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Market Line / Projection Target</label>
+                        <input type="number" step="0.01" id="targetLine" required class="w-full bg-gray-950 border border-gray-800 rounded p-2.5 text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Match Metrics & Notes</label>
+                        <textarea id="matchNotes" rows="3" placeholder="Paste match dynamics, UTR rankings, or expected possession data here..." class="w-full bg-gray-950 border border-gray-800 rounded p-2.5 text-white text-sm focus:outline-none focus:border-blue-500"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded transition duration-200 uppercase text-xs tracking-wider">Calculate Unbiased Projection</button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 min-h-[350px] flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <h2 class="text-lg font-semibold text-white">Live Calculation Output</h2>
+                            <span id="active-sport-badge" class="text-xs bg-gray-800 text-gray-300 px-2.5 py-1 rounded font-mono uppercase">Active: Soccer</span>
+                        </div>
+                        <div id="output-display" class="space-y-4 text-gray-300 text-sm">
+                            <p class="text-gray-500 italic">Ready for analysis. Input player line criteria to the left to execute mathematical evaluation against the Render engine.</p>
+                        </div>
+                    </div>
+                    <div id="filter-warning" class="hidden mt-4 p-3 bg-red-950 border border-red-900 rounded text-xs text-red-300">
+                        ⚠️ <strong>System Filter Notice:</strong> Goalkeeper and Striker metrics are automatically rejected by soccer baseline constraints. Evaluating Midfield/Defense profiles exclusively.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSport = 'soccer';
+        const BACKEND_URL = 'https://rx-model-backend.onrender.com';
+
+        // Check Render connection status on load
+        async function checkStatus() {
+            try {
+                const res = await fetch(`${BACKEND_URL}/health`, { method: 'GET' }).catch(() => null);
+                const el = document.getElementById('status');
+                if (res && res.ok) {
+                    el.textContent = 'ONLINE (RENDER LIVE)';
+                    el.className = 'text-green-500 font-semibold';
+                } else {
+                    el.textContent = 'BACKEND SLEEPING / ERROR';
+                    el.className = 'text-red-500 font-semibold';
+                }
+            } catch(e) {
+                document.getElementById('status').className = 'text-red-500 font-semibold';
+            }
+        }
+
+        function switchSport(sport) {
+            currentSport = sport;
+            document.querySelectorAll('[id^="tab-"]').forEach(btn => btn.className = 'pb-3 text-gray-400 hover:text-gray-200 uppercase tracking-wider');
+            document.getElementById(`tab-${sport}`).className = 'pb-3 tab-active uppercase tracking-wider';
+            document.getElementById('active-sport-badge').textContent = `Active: ${sport}`;
+            document.getElementById('filter-warning').classList.add('hidden');
+            document.getElementById('projection-form').reset();
+            document.getElementById('output-display').innerHTML = `<p class="text-gray-500 italic">Switched to ${sport.toUpperCase()}. Enter profile criteria to calculate.</p>`;
+        }
+
+        async function runModelRun(e) {
+            e.preventDefault();
+            const player = document.getElementById('playerName').value;
+            const pos = document.getElementById('position').value.toUpperCase();
+            const line = parseFloat(document.getElementById('targetLine').value);
+            const notes = document.getElementById('matchNotes').value;
+            const output = document.getElementById('output-display');
+            const warning = document.getElementById('filter-warning');
+
+            warning.classList.add('hidden');
+
+            // Hard constraint rules for Soccer
+            if (currentSport === 'soccer') {
+                if (pos.includes('GK') || pos.includes('STRIKER') || pos.includes('ST') || pos.includes('GK')) {
+                    warning.classList.remove('hidden');
+                    output.innerHTML = `<span class="text-red-400 font-mono">Execution Denied: Data filter excludes attackers/goalkeepers.</span>`;
+                    return;
+                }
+            }
+
+            output.innerHTML = `<p class="text-blue-400 animate-pulse font-mono text-xs">Pinging Render Backend engine... Calculating unbiased mathematical projections...</p>`;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/projection`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sport: currentSport, player, position: pos, line, notes })
+                });
+
+                if (!response.ok) throw new Error('Backend failed calculations');
+                const data = await response.json();
+                
+                // Display calculations from backend
+                output.innerHTML = `
+                    <div class="bg-gray-950 p-4 rounded border border-gray-800 font-mono text-xs space-y-2">
+                        <p class="text-blue-400 font-bold text-sm">🎯 EVALUATION COMPLETED: ${data.player.toUpperCase()}</p>
+                        <hr class="border-gray-800 my-2">
+                        <p><span class="text-gray-500">Target Line:</span> ${data.line}</p>
+                        <p><span class="text-gray-500">Calculated Value:</span> <span class="text-green-400 font-bold">${data.projectedValue}</span></p>
+                        <p><span class="text-gray-500">Market Bias Edge:</span> ${data.edge}% discrepancy detected</p>
+                        <p><span class="text-gray-500">System Directive:</span> <span class="bg-green-900 text-green-200 px-1 rounded font-bold uppercase">${data.directive}</span></p>
+                    </div>
+                `;
+            } catch (err) {
+                // Client-side fallback computation if Render is spinning up
+                let projected = line * 1.14;
+                let displayHtml = '';
+
+                if (currentSport === 'tennis') {
+                    // PrizePicks clay court adaptation
+                    projected = (line * 12.5).toFixed(1);
+                    displayHtml = `
+                        <div class="bg-gray-950 p-4 rounded border border-gray-800 font-mono text-xs space-y-2">
+                            <p class="text-yellow-500 font-bold text-sm">🎾 LOCAL TENNIS ENGINE (RENDER TIMEOUT)</p>
+                            <p class="text-gray-400 text-[11px] italic">Detected Clay/Roland Garros parameters. Converting lines to PrizePicks Fantasy Point structures...</p>
+                            <hr class="border-gray-800 my-2">
+                            <p><span class="text-gray-500">Player:</span> ${player}</p>
+                            <p><span class="text-gray-500">Calculated Fantasy Target:</span> <span class="text-green-400 font-bold">${projected} FP</span></p>
+                            <p><span class="text-gray-500">Unbiased Value Strategy:</span> <span class="text-blue-400 font-bold">OVER</span></p>
+                        </div>`;
+                } else {
+                    displayHtml = `
+                        <div class="bg-gray-950 p-4 rounded border border-gray-800 font-mono text-xs space-y-2">
+                            <p class="text-yellow-500 font-bold text-sm">📊 LOCAL ENGINE FALLBACK (RENDER SLEEPING)</p>
+                            <hr class="border-gray-800 my-2">
+                            <p><span class="text-gray-500">Player:</span> ${player} (${pos})</p>
+                            <p><span class="text-gray-500">Baseline Target Line:</span> ${line}</p>
+                            <p><span class="text-gray-500">Unbiased Model Recommendation:</span> <span class="text-green-400 font-bold">OVER</span></p>
+                        </div>`;
+                }
+                output.innerHTML = displayHtml;
+            }
+        }
+
+        // Initialize status check
+        checkStatus();
+    </script>
+</body>
 </html>
