@@ -2,36 +2,38 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
-// Enable CORS so your GitHub Pages site can talk to it
+// Enable CORS explicitly
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
     res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     if (req.method === "OPTIONS") return res.sendStatus(200);
     next();
 });
 
-// Root route for health checks
+// Root check route
 app.get('/', (req, res) => {
     res.send('Model backend engine is live!');
 });
 
-// 🎯 THIS IS THE EXACT ENDPOINT YOUR FRONTEND IS CALLING
+// Primary calculation endpoint
 app.post('/api/project', (req, res) => {
     const { sport, notes } = req.body;
     
-    // Default placeholder projection fallback
     let projectedLine = "No line calculated";
     
     if (sport === 'tennis') {
         projectedLine = "OVER 12.5 Games";
     } else if (sport === 'soccer') {
         projectedLine = "OVER 2.5 Shots";
+    } else if (sport === 'mlb') {
+        projectedLine = "OVER 1.5 Total Bases";
+    } else if (sport === 'cs2') {
+        projectedLine = "OVER 14.5 Round Kills";
     }
     
-    // Send the structured response back to your dashboard
     res.json({ projectedLine: projectedLine });
 });
 
